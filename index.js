@@ -24,9 +24,18 @@ var rsvpListener = null;
 var guestbookListener = null;
 
 // Add Firebase project configuration object here
+const firebaseConfig = {
+  apiKey: "AIzaSyAJSoYctAQA8apr2A_0uWPbhx9UvPwRS74",
+  authDomain: "fir-web-codelab-99546.firebaseapp.com",
+  databaseURL: "https://fir-web-codelab-99546.firebaseio.com",
+  projectId: "fir-web-codelab-99546",
+  storageBucket: "fir-web-codelab-99546.appspot.com",
+  messagingSenderId: "1069779880822",
+  appId: "1:1069779880822:web:5026f198193f3431770857"
+};
 // var firebaseConfig = {};
 
-// firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(firebaseConfig);
 
 // FirebaseUI config
 const uiConfig = {
@@ -44,4 +53,64 @@ const uiConfig = {
   }
 };
 
-// const ui = new firebaseui.auth.AuthUI(firebase.auth());
+const ui = new firebaseui.auth.AuthUI(firebase.auth());
+startRsvpButton.addEventListener("click",
+ () => {
+      if (firebase.auth().currentUser) {
+      // User is signed in; allows user to sign out
+      firebase.auth().signOut();
+    } else {
+      // No user is signed in; allows user to sign in
+      ui.start("#firebaseui-auth-container", uiConfig);
+    }
+});
+firebase.auth().onAuthStateChanged((user)=> {
+  if (user) {
+    startRsvpButton.textContent = "LOGOUT"
+    guestbookContainer.style.display = "block";
+    subscribeGuestbook();
+  }
+  else {
+    startRsvpButton.textContent = "RSVP"
+    guestbookContainer.style.display = "none";
+    unsubscribeGuestbook();
+  }
+});
+form.addEventListener("submit", (e) => {
+ // Prevent the default form redirect
+ e.preventDefault();
+ // Write a new message to the database collection "guestbook"
+ firebase.firestore().collection("guestbook").add({
+   text: input.value,
+   timestamp: Date.now(),
+   name: firebase.auth().currentUser.displayName,
+   userId: firebase.auth().currentUser.uid
+ })
+ // clear message input field
+ input.value = ""; 
+ // Return false to avoid redirect
+ return false;
+});
+function subscribeGuestbook(){
+   // Create query for messages
+ guestbookListener = firebase.firestore().collection("guestbook")
+ .orderBy("timestamp","desc")
+ .onSnapshot((snaps) => {
+   // Reset page
+   guestbook.innerHTML = "";
+   // Loop through documents in database
+   snaps.forEach((doc) => {
+     // Create an HTML entry for each document and add it to the chat
+     const entry = document.createElement("p");
+     entry.textContent = doc.data().name + ": " + doc.data().text;
+     guestbook.appendChild(entry);
+   });
+ });
+};
+function unsubscribeGuestbook(){
+ if (guestbookListener != null)
+ {
+   guestbookListener();
+   guestbookListener = null;
+ }
+};
