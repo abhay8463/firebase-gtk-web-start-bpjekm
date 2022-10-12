@@ -97,10 +97,10 @@ input{
 }
 
 button.clicked{
-  background-color: rgb(60, 67, 154);
-  border-color: rgb(60, 67, 154);
+  background-color: rgb(50, 57, 124);
+  border-color: rgb(50, 57, 124);
   color: white;
-  outline-color: rgb(60, 67, 154);
+  outline-color: rgb(50, 57, 124);
 }
 
 button, button.firebaseui-id-submit.mdl-button--raised.mdl-button--colored{
